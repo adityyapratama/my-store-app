@@ -1,0 +1,44 @@
+services:
+  # 1. Load Balancer (Nginx)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+
+  # 2. Aplikasi Next.js (Tanpa container_name agar bisa di-scale)
+  app:
+    build: .
+    # ports: - "3000:3000" <--- Dihapus agar user lewat Nginx
+    environment:
+      DATABASE_URL: postgresql://myuser:password@db:5432/mydatabase
+    depends_on:
+      - db
+
+  # 3. Database
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/var/data   
+
+volumes:
+  postgres_data:
+  portainer_data:
