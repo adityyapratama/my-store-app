@@ -17,6 +17,13 @@ services:
       DATABASE_URL: postgresql://myuser:password@db:5432/mydatabase
     depends_on:
       - db
+    deploy:
+      mode: replicated
+      replicas: 3
+      resources:
+        limits: # Batasan maksimal resource agar tidak over-consume
+          cpus: '0.5'
+          memory: 512M
 
   # 3. Database
   db:
